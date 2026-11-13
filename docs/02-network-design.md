@@ -5,7 +5,7 @@
 
 ## Overview
 
-Two isolated virtual bridges enforced at the hypervisor level. No firewall rules — physical separation at the bridge layer. Lab and cloud traffic cannot communicate regardless of VM configuration.
+Two separate Proxmox virtual bridges are used to segment cloud services from the lab network. The lab bridge has no physical bridge port or configured upstream gateway. This reduces direct connectivity between the segments, but it is not physical isolation: the Proxmox host manages both bridges and is part of the trusted computing boundary. Host firewall policy, IP forwarding, and management-plane exposure must also be considered.
 
 ## Bridges
 
@@ -54,9 +54,19 @@ systemctl restart networking
 ifup vmbr1
 ```
 
-## Why bridges instead of firewall rules
+## Segmentation model and limitations
 
-A misconfigured firewall rule can be bypassed or accidentally disabled. A bridge with no upstream gateway is a hard architectural boundary — there is no network path between segments regardless of what software runs inside the VMs.
+A bridge with no physical uplink or configured upstream gateway reduces the lab VMs' direct path to external networks. It is not, by itself, a complete security boundary. The Proxmox host has interfaces on both networks and can potentially route or otherwise bridge traffic if forwarding, firewall, or host services permit it.
+
+Before treating this design as a security control, validate at least:
+
+- IP forwarding and routing behavior on the Proxmox host
+- Proxmox firewall policy for the host, bridges, and guest interfaces
+- Management services listening on the lab-facing host address
+- Connectivity tests from lab guests to cloud guests, the host, and external networks
+- Whether any VM has multiple interfaces connected to both segments
+
+Document test commands, expected results, and observed results. Avoid describing the segments as physically isolated unless the hardware topology actually provides that separation.
 
 ## Traffic flow diagram
 
