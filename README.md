@@ -19,12 +19,12 @@ Proxmox VE (bare metal)
 ├── vmbr0 — main LAN (internet access)
 │   ├── Nextcloud LXC    personal cloud, data on LUKS encrypted 1TB
 │   └── PiHole LXC       DNS-level network-wide blocking (planned)
-└── vmbr1 — isolated lab network (no internet, no cloud access)
+└── vmbr1 — separate virtual lab network (no direct uplink)
     └── Kali Linux VM    attack machine
         └── Target VMs   Metasploitable 2, VulnHub, HackTheBox
 ```
 
-Lab and cloud traffic run on separate bridges enforced at the hypervisor level. Attack traffic generated during practice has no path to the cloud network or personal data.
+The lab and cloud workloads are attached to separate Proxmox virtual bridges. The lab bridge has no physical uplink or configured upstream gateway. This is virtual network segmentation, not physical isolation: the Proxmox host manages both bridges and remains part of the trusted computing boundary. Host firewall policy, IP forwarding, and management-plane exposure should be reviewed as additional controls.
 
 ## Stack
 
